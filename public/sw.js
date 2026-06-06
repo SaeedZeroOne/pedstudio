@@ -1,4 +1,4 @@
-const CACHE_NAME = "ped-studio-shell-v1";
+const CACHE_NAME = "ped-studio-shell-v2";
 const APP_SHELL = ["./", "./index.html", "./manifest.webmanifest", "./ped-studio-icon.svg"];
 
 self.addEventListener("install", (event) => {

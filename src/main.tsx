@@ -494,6 +494,11 @@ function App() {
   useEffect(() => {
     localStorage.setItem(themeStorageKey, theme);
     document.documentElement.dataset.theme = theme;
+    const themeColor = theme === "dark" ? "#0f1b20" : "#f3f9fb";
+    document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]').forEach((meta) => {
+      meta.content = themeColor;
+    });
+    document.querySelector<HTMLMetaElement>('meta[name="apple-mobile-web-app-status-bar-style"]')?.setAttribute("content", theme === "dark" ? "black-translucent" : "default");
   }, [theme]);
 
   useEffect(() => {
@@ -546,8 +551,10 @@ function App() {
       const pull = Math.min(maxPull, Math.pow(Math.abs(delta), 0.78) * 1.35);
 
       if (atTop && delta > 0) {
+        if (event.cancelable) event.preventDefault();
         setOverscroll((prev) => Math.abs(prev.top - pull) > 1 ? { top: pull, bottom: 0 } : prev);
       } else if (atBottom && delta < 0 && maxScroll > 0) {
+        if (event.cancelable) event.preventDefault();
         setOverscroll((prev) => Math.abs(prev.bottom - pull) > 1 ? { top: 0, bottom: pull } : prev);
       } else if (overscrollRef.current.top || overscrollRef.current.bottom) {
         setOverscroll({ top: 0, bottom: 0 });
@@ -555,7 +562,7 @@ function App() {
     }
 
     window.addEventListener("touchstart", handleTouchStart, { passive: true });
-    window.addEventListener("touchmove", handleTouchMove, { passive: true });
+    window.addEventListener("touchmove", handleTouchMove, { passive: false });
     window.addEventListener("touchend", reset, { passive: true });
     window.addEventListener("touchcancel", reset, { passive: true });
     return () => {
