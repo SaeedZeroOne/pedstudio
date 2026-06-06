@@ -498,7 +498,7 @@ function App() {
     document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]').forEach((meta) => {
       meta.content = themeColor;
     });
-    document.querySelector<HTMLMetaElement>('meta[name="apple-mobile-web-app-status-bar-style"]')?.setAttribute("content", theme === "dark" ? "black-translucent" : "default");
+    document.querySelector<HTMLMetaElement>('meta[name="apple-mobile-web-app-status-bar-style"]')?.setAttribute("content", "black-translucent");
   }, [theme]);
 
   useEffect(() => {
