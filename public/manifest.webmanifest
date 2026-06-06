@@ -1,0 +1,21 @@
+{
+  "name": "Ped Studio",
+  "short_name": "Ped Studio",
+  "description": "A clinical pediatric growth and vital signs assessment workspace.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "any",
+  "background_color": "#f3f9fb",
+  "theme_color": "#f3f9fb",
+  "categories": ["health", "medical", "productivity"],
+  "icons": [
+    {
+      "src": "./ped-studio-icon.svg",
+      "sizes": "64x64",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

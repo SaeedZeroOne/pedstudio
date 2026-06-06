@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { Activity, ArrowLeft, CheckCircle2, FileDown, HelpCircle, Plus, Printer, Save, Search, Stethoscope, Trash2, UserPlus, Users } from "lucide-react";
+import { Activity, ArrowLeft, CheckCircle2, FileDown, Globe2, HelpCircle, Moon, Plus, Printer, Save, Search, Stethoscope, Sun, Trash2, UserPlus, Users } from "lucide-react";
 import { calculateAge } from "./lib/age";
 import { dateFromAge, gregorianToJalali, isoDate, jalaliToGregorian, parseIsoParts, type AgeInput } from "./lib/calendar";
 import { calculateScores, predictedHeightAt18FromZ, referenceForAge, type MetricKey, type Sex } from "./lib/growth";
@@ -14,6 +14,7 @@ type BirthInputMode = "gregorian" | "jalali" | "age";
 type Screen = "lookup" | "visits" | "assessment";
 type Language = "en" | "fa";
 type FollowUpUnit = "years" | "months" | "days";
+type Theme = "light" | "dark";
 
 type Patient = {
   sex: Sex;
@@ -38,6 +39,7 @@ type PatientDraft = Omit<PatientRecord, "visits">;
 
 const storageKey = "pediatrics-hub-patients";
 const languageStorageKey = "pediatrics-hub-language";
+const themeStorageKey = "pediatrics-hub-theme";
 const today = new Date().toISOString().slice(0, 10);
 const defaultAgeInput: AgeInput = { years: 0, months: 6, days: 0 };
 const defaultDob = dateFromAge(today, defaultAgeInput);
@@ -79,7 +81,7 @@ const uiText = {
     firstPresentationAge: "First presentation age",
     firstPresentationPlaceholder: "e.g. 6 months",
     phoneNumber: "Phone number",
-    gestationalAge: "Gestational age",
+    gestationalAge: "Gestational Age",
     summary: "Summary for the patient",
     diagnosis: "Diagnosis up to now",
     noMatchingPatient: "No matching patient",
@@ -104,10 +106,13 @@ const uiText = {
     visitEntry: "Visit Entry",
     sex: "Sex",
     language: "Language",
+    theme: "Theme",
+    lightTheme: "Light",
+    darkTheme: "Dark",
     patientSection: "Patient and Age",
     ageAndVisit: "Age and Visit",
     ageEntry: "Age entry",
-    ageYmd: "Age - y m d",
+    ageYmd: "Age (Y/M/D)",
     dobGregorian: "DOB - Gregorian",
     dobJalali: "DOB - Jalali",
     visitDate: "Visit date",
@@ -122,16 +127,16 @@ const uiText = {
     months: "Months",
     days: "Days",
     growthMeasurements: "Growth Measurements",
-    weightKg: "Weight kg",
-    heightCm: "Length/height cm",
-    headCircCm: "Head circ cm",
+    weightKg: "Weight (kg)",
+    heightCm: "Length / Height (cm)",
+    headCircCm: "Head Circumference (cm)",
     headCircDisabled: "Head circumference reference charting is disabled after 5 years.",
     vitalSigns: "Vital Signs",
-    bpReference: "BP reference",
+    bpReference: "Blood Pressure Reference",
     aapScreeningTable: "AAP screening table",
     percentileEstimate: "Percentile estimate",
     heartRate: "Heart rate",
-    respiratoryRate: "Resp rate",
+    respiratoryRate: "Respiratory Rate",
     systolicBp: "Systolic BP",
     diastolicBp: "Diastolic BP",
     visitSession: "Visit Session",
@@ -180,14 +185,14 @@ const uiText = {
     lengthForAge: "Length-for-age",
     heightForAge: "Height-for-age",
     bmiForAge: "BMI-for-age",
-    headCircForAge: "Head circumference-for-age",
+    headCircForAge: "Head Circumference-for-Age",
     weightAxis: "Weight (kg)",
     lengthAxis: "Length (cm)",
     heightAxis: "Height (cm)",
     bmiAxis: "BMI (kg/m2)",
-    headCircAxis: "Head circumference (cm)",
+    headCircAxis: "Head Circumference (cm)",
     heartRateTrend: "Heart rate trend",
-    respiratoryRateTrend: "Respiratory rate trend",
+    respiratoryRateTrend: "Respiratory Rate Trend",
     longitudinalTracking: "Longitudinal Tracking",
     visitsInWorkspace: "in this workspace",
     showFormula: "Show formula",
@@ -245,6 +250,9 @@ const uiText = {
     visitEntry: "ورود اطلاعات ویزیت",
     sex: "جنسیت",
     language: "زبان",
+    theme: "پوسته",
+    lightTheme: "روشن",
+    darkTheme: "تیره",
     patientSection: "بیمار و سن",
     ageAndVisit: "سن و ویزیت",
     ageEntry: "روش ورود سن",
@@ -263,9 +271,9 @@ const uiText = {
     months: "ماه",
     days: "روز",
     growthMeasurements: "اندازه‌گیری رشد",
-    weightKg: "وزن kg",
-    heightCm: "قد/طول cm",
-    headCircCm: "دور سر cm",
+    weightKg: "وزن (kg)",
+    heightCm: "قد / طول (cm)",
+    headCircCm: "دور سر (cm)",
     headCircDisabled: "رسم مرجع دور سر بعد از ۵ سالگی غیرفعال است.",
     vitalSigns: "علائم حیاتی",
     bpReference: "مرجع فشار خون",
@@ -341,6 +349,10 @@ type UiLabels = (typeof uiText)[Language];
 
 function loadLanguage(): Language {
   return localStorage.getItem(languageStorageKey) === "fa" ? "fa" : "en";
+}
+
+function loadTheme(): Theme {
+  return localStorage.getItem(themeStorageKey) === "dark" ? "dark" : "light";
 }
 
 function generatedPatientId(patients: PatientRecord[]) {
@@ -441,6 +453,7 @@ function loadPatients() {
 function App() {
   const [screen, setScreen] = useState<Screen>("lookup");
   const [language, setLanguage] = useState<Language>(loadLanguage);
+  const [theme, setTheme] = useState<Theme>(loadTheme);
   const [patients, setPatients] = useState<PatientRecord[]>(loadPatients);
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
   const [isGuest, setIsGuest] = useState(false);
@@ -450,6 +463,8 @@ function App() {
   const [bpMethod, setBpMethod] = useState<BpMethod>("table");
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved">("idle");
   const [hideMobileTopbar, setHideMobileTopbar] = useState(false);
+  const [overscroll, setOverscroll] = useState({ top: 0, bottom: 0 });
+  const overscrollRef = useRef(overscroll);
   const [guestPatient, setGuestPatient] = useState<Patient>(defaultPatient);
   const [guestVisits, setGuestVisits] = useState<Visit[]>([newVisit()]);
   const [birthInputMode, setBirthInputMode] = useState<BirthInputMode>("age");
@@ -459,17 +474,27 @@ function App() {
   const [followUpInterval, setFollowUpInterval] = useState<{ value: number | undefined; unit: FollowUpUnit }>({ value: undefined, unit: "months" });
   const labels = uiText[language];
   const d = (value: string | number | undefined) => localizeDigits(value, language);
-  const shellClass = `app-shell ${language === "fa" ? "rtl" : ""} ${hideMobileTopbar ? "mobile-topbar-hidden" : ""}`;
+  const shellClass = `app-shell ${language === "fa" ? "rtl" : ""} ${theme === "dark" ? "theme-dark" : "theme-light"} ${hideMobileTopbar ? "mobile-topbar-hidden" : ""} ${overscroll.top ? "is-overscrolling-top" : ""} ${overscroll.bottom ? "is-overscrolling-bottom" : ""}`;
+  const shellStyle = { "--overscroll-top": `${overscroll.top}px`, "--overscroll-bottom": `${overscroll.bottom}px` } as React.CSSProperties;
 
   useEffect(() => {
     localStorage.setItem(storageKey, JSON.stringify(patients));
   }, [patients]);
 
   useEffect(() => {
+    overscrollRef.current = overscroll;
+  }, [overscroll]);
+
+  useEffect(() => {
     localStorage.setItem(languageStorageKey, language);
     document.documentElement.lang = language === "fa" ? "fa" : "en";
     document.documentElement.dir = language === "fa" ? "rtl" : "ltr";
   }, [language]);
+
+  useEffect(() => {
+    localStorage.setItem(themeStorageKey, theme);
+    document.documentElement.dataset.theme = theme;
+  }, [theme]);
 
   useEffect(() => {
     let lastY = window.scrollY;
@@ -490,6 +515,54 @@ function App() {
     return () => {
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleScroll);
+    };
+  }, []);
+
+  useEffect(() => {
+    let startY = 0;
+    let active = false;
+    const maxPull = 74;
+
+    const reset = () => {
+      active = false;
+      setOverscroll({ top: 0, bottom: 0 });
+    };
+
+    const scrollElement = () => document.scrollingElement ?? document.documentElement;
+
+    function handleTouchStart(event: TouchEvent) {
+      if (window.innerWidth > 760 || event.touches.length !== 1) return;
+      active = true;
+      startY = event.touches[0].clientY;
+    }
+
+    function handleTouchMove(event: TouchEvent) {
+      if (!active || event.touches.length !== 1) return;
+      const element = scrollElement();
+      const delta = event.touches[0].clientY - startY;
+      const maxScroll = element.scrollHeight - element.clientHeight;
+      const atTop = element.scrollTop <= 0;
+      const atBottom = element.scrollTop >= maxScroll - 1;
+      const pull = Math.min(maxPull, Math.pow(Math.abs(delta), 0.78) * 1.35);
+
+      if (atTop && delta > 0) {
+        setOverscroll((prev) => Math.abs(prev.top - pull) > 1 ? { top: pull, bottom: 0 } : prev);
+      } else if (atBottom && delta < 0 && maxScroll > 0) {
+        setOverscroll((prev) => Math.abs(prev.bottom - pull) > 1 ? { top: 0, bottom: pull } : prev);
+      } else if (overscrollRef.current.top || overscrollRef.current.bottom) {
+        setOverscroll({ top: 0, bottom: 0 });
+      }
+    }
+
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("touchmove", handleTouchMove, { passive: true });
+    window.addEventListener("touchend", reset, { passive: true });
+    window.addEventListener("touchcancel", reset, { passive: true });
+    return () => {
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", reset);
+      window.removeEventListener("touchcancel", reset);
     };
   }, []);
 
@@ -730,15 +803,18 @@ function App() {
 
   if (screen === "lookup") {
     return (
-      <main className={shellClass} lang={language} dir={language === "fa" ? "rtl" : "ltr"}>
-        <SideNav active="patients" labels={labels} />
+      <main className={shellClass} style={shellStyle} lang={language} dir={language === "fa" ? "rtl" : "ltr"}>
+        <SideNav active="patients" labels={labels} language={language} setLanguage={setLanguage} theme={theme} setTheme={setTheme} />
         <header className="topbar">
           <div>
             <div className="app-kicker">Ped Studio</div>
             <h1>{labels.patientLookup}</h1>
           </div>
           <div className="top-actions">
-            <LanguageSwitch language={language} setLanguage={setLanguage} label={labels.language} />
+            <div className="mobile-shell-controls">
+              <LanguageSwitch language={language} setLanguage={setLanguage} label={labels.language} />
+              <ThemeSwitch theme={theme} setTheme={setTheme} labels={labels} />
+            </div>
             <button className="primary compact-primary" onClick={startGuest} title={labels.guestMode}><Activity size={18} /> {labels.guestMode}</button>
           </div>
         </header>
@@ -841,8 +917,8 @@ function App() {
 
   if (screen === "visits" && selectedRecord) {
     return (
-      <main className={shellClass} lang={language} dir={language === "fa" ? "rtl" : "ltr"}>
-        <SideNav active="visits" labels={labels} />
+      <main className={shellClass} style={shellStyle} lang={language} dir={language === "fa" ? "rtl" : "ltr"}>
+        <SideNav active="visits" labels={labels} language={language} setLanguage={setLanguage} theme={theme} setTheme={setTheme} />
         <header className="topbar">
           <div>
             <div className="app-kicker">Ped Studio</div>
@@ -850,7 +926,10 @@ function App() {
             <p>{d(selectedRecord.id)} - {selectedRecord.nationalId ? d(selectedRecord.nationalId) : labels.noNationalId}</p>
           </div>
           <div className="top-actions">
-            <LanguageSwitch language={language} setLanguage={setLanguage} label={labels.language} />
+            <div className="mobile-shell-controls">
+              <LanguageSwitch language={language} setLanguage={setLanguage} label={labels.language} />
+              <ThemeSwitch theme={theme} setTheme={setTheme} labels={labels} />
+            </div>
             <button onClick={() => setScreen("lookup")} title={labels.patients}><ArrowLeft size={18} /> {labels.patients}</button>
             <button className="primary compact-primary" onClick={() => startVisit()} title={labels.todayVisit}><Plus size={18} /> {labels.todayVisit}</button>
           </div>
@@ -906,8 +985,8 @@ function App() {
   }
 
   return (
-    <main className={shellClass} lang={language} dir={language === "fa" ? "rtl" : "ltr"}>
-      <SideNav active="assessment" labels={labels} />
+    <main className={shellClass} style={shellStyle} lang={language} dir={language === "fa" ? "rtl" : "ltr"}>
+      <SideNav active="assessment" labels={labels} language={language} setLanguage={setLanguage} theme={theme} setTheme={setTheme} />
       <header className="topbar">
         <div>
           <div className="app-kicker">Ped Studio</div>
@@ -915,7 +994,10 @@ function App() {
           <p>{patientSub}</p>
         </div>
         <div className="top-actions">
-          <LanguageSwitch language={language} setLanguage={setLanguage} label={labels.language} />
+          <div className="mobile-shell-controls">
+            <LanguageSwitch language={language} setLanguage={setLanguage} label={labels.language} />
+            <ThemeSwitch theme={theme} setTheme={setTheme} labels={labels} />
+          </div>
           <button onClick={() => setScreen(isGuest ? "lookup" : "visits")} title={isGuest ? labels.patients : labels.visits}><ArrowLeft size={18} /> {isGuest ? labels.patients : labels.visits}</button>
           <button onClick={exportJson} title={labels.export}><FileDown size={18} /> {labels.export}</button>
           <button onClick={() => window.print()} title={labels.print}><Printer size={18} /> {labels.print}</button>
@@ -1064,7 +1146,7 @@ function App() {
             <Metric title={labels.predictedAdultHeight} value={predicted ? `${d(round(predicted, 1))} cm` : "-"} detail={d(labels.sameHeightPercentile)} infoLabel={labels.showFormula} onInfo={() => setFormulaInfo({ title: labels.predictedAdultHeight, body: "Predicted adult height = the CDC height value at age 18 years for the child's current height-for-age Z-score/percentile. It assumes the child remains on the same height percentile and does not use bone age." })} />
           </div>
 
-          <section className="score-panel">
+          <section className="score-panel current-visit-panel">
             <div className="panel-heading">
               <div>
                 <h2>{labels.currentVisit}</h2>
@@ -1225,14 +1307,37 @@ function ProfileItem({ label, value }: { label: string; value: string }) {
 
 function LanguageSwitch({ language, setLanguage, label }: { language: Language; setLanguage: (language: Language) => void; label: string }) {
   return (
-    <select className="language-switch" value={language} onChange={(event) => setLanguage(event.target.value as Language)} aria-label={label} title={label}>
-      <option value="en">English</option>
-      <option value="fa">فارسی</option>
-    </select>
+    <button className="language-switch" onClick={() => setLanguage(language === "fa" ? "en" : "fa")} aria-label={label} title={label}>
+      <Globe2 size={17} />
+      {language === "fa" ? "FA" : "EN"}
+    </button>
   );
 }
 
-function SideNav({ active, labels }: { active: "patients" | "visits" | "assessment"; labels: UiLabels }) {
+function ThemeSwitch({ theme, setTheme, labels }: { theme: Theme; setTheme: (theme: Theme) => void; labels: UiLabels }) {
+  return (
+    <button className="theme-switch" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} title={labels.theme} aria-label={labels.theme}>
+      {theme === "dark" ? <Moon size={17} /> : <Sun size={17} />}
+      <span>{theme === "dark" ? labels.darkTheme : labels.lightTheme}</span>
+    </button>
+  );
+}
+
+function SideNav({
+  active,
+  labels,
+  language,
+  setLanguage,
+  theme,
+  setTheme,
+}: {
+  active: "patients" | "visits" | "assessment";
+  labels: UiLabels;
+  language: Language;
+  setLanguage: (language: Language) => void;
+  theme: Theme;
+  setTheme: (theme: Theme) => void;
+}) {
   return (
     <aside className="side-nav" aria-label="Application navigation">
       <nav>
@@ -1249,8 +1354,9 @@ function SideNav({ active, labels }: { active: "patients" | "visits" | "assessme
           <span>{labels.assessment}</span>
         </div>
       </nav>
-      <div className="side-nav-footer">
-        <span>Ped Studio</span>
+      <div className="side-nav-controls">
+        <LanguageSwitch language={language} setLanguage={setLanguage} label={labels.language} />
+        <ThemeSwitch theme={theme} setTheme={setTheme} labels={labels} />
       </div>
     </aside>
   );
@@ -1275,3 +1381,11 @@ function FormulaModal({ title, body, labels, onClose }: { title: string; body: s
 }
 
 createRoot(document.getElementById("root")!).render(<App />);
+
+if ("serviceWorker" in navigator && (window.location.protocol === "https:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`, { scope: import.meta.env.BASE_URL }).catch(() => {
+      // The app still works normally if PWA registration is unavailable.
+    });
+  });
+}

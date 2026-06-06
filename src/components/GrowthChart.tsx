@@ -42,10 +42,10 @@ function smoothPath(points: { x: number; y: number }[]) {
     const p1 = points[index];
     const p2 = points[index + 1];
     const p3 = points[Math.min(points.length - 1, index + 2)];
-    const cp1x = p1.x + (p2.x - p0.x) / 6;
-    const cp1y = p1.y + (p2.y - p0.y) / 6;
-    const cp2x = p2.x - (p3.x - p1.x) / 6;
-    const cp2y = p2.y - (p3.y - p1.y) / 6;
+    const cp1x = p1.x + (p2.x - p0.x) / 4.5;
+    const cp1y = p1.y + (p2.y - p0.y) / 4.5;
+    const cp2x = p2.x - (p3.x - p1.x) / 4.5;
+    const cp2y = p2.y - (p3.y - p1.y) / 4.5;
     commands.push(`C ${cp1x.toFixed(2)} ${cp1y.toFixed(2)}, ${cp2x.toFixed(2)} ${cp2y.toFixed(2)}, ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`);
   }
   return commands.join(" ");
@@ -199,25 +199,27 @@ export function GrowthChart({ metric, title, sex, reference, points, unit, yLabe
               if (b.value === undefined) return -1;
               return b.value - a.value;
             });
-            const boxHeight = 32 + rows.length * 20;
-            const boxWidth = 252;
+            const boxHeight = 44 + rows.length * 24;
+            const boxWidth = 284;
             const tx = hover.sx > chartWidth - boxWidth - 18 ? hover.sx - boxWidth - 12 : hover.sx + 12;
             const ty = Math.max(margin.top + 4, Math.min(hover.sy - 48, chartHeight - boxHeight - 8));
             return (
               <g>
-                <line x1={hover.sx} x2={hover.sx} y1={margin.top} y2={margin.top + innerHeight} stroke="#647789" strokeDasharray="4 4" />
+                <line x1={hover.sx} x2={hover.sx} y1={margin.top} y2={margin.top + innerHeight} stroke="#6d8791" strokeDasharray="4 4" />
                 <circle cx={hover.sx} cy={hover.sy} r="4" fill="#1d3557" stroke="#ffffff" strokeWidth="2" />
                 <g transform={`translate(${tx}, ${ty})`}>
-                  <rect width={boxWidth} height={boxHeight} rx="10" fill="#ffffff" stroke="#cfd9e2" />
-                  <rect width={boxWidth} height="30" rx="10" fill="#f5f9fd" />
-                  <line x1="0" x2={boxWidth} y1="30" y2="30" stroke="#e5edf3" />
-                  <text x="12" y="20" className="tooltip-title">{xLabel}</text>
-                  <text x={boxWidth - 12} y="20" textAnchor="end" className="tooltip-title">{formatX(hover.x)}</text>
+                  <rect width={boxWidth} height={boxHeight} rx="12" fill="var(--surface)" stroke="var(--line-strong)" />
+                  <rect x="1" y="1" width={boxWidth - 2} height="38" rx="11" fill="var(--surface-muted)" />
+                  <line x1="0" x2={boxWidth} y1="40" y2="40" stroke="var(--line)" />
+                  <text x="14" y="17" className="tooltip-muted">{xLabel}</text>
+                  <text x="14" y="31" className="tooltip-title">{formatX(hover.x)}</text>
+                  <text x={boxWidth - 14} y="25" textAnchor="end" className="tooltip-muted">{unit}</text>
                   {rows.map((row, index) => (
-                    <g key={row.key} transform={`translate(12, ${43 + index * 20})`}>
-                      <circle cx="3" cy="-4" r="3" fill={row.color} />
-                      <text x="13" y="0" className={row.key === "patient" ? "tooltip-title" : "tooltip-line"} fill={row.color}>{row.label}</text>
-                      <text x={boxWidth - 24} y="0" textAnchor="end" className={row.key === "patient" ? "tooltip-title" : "tooltip-line"} fill={row.color}>
+                    <g key={row.key} transform={`translate(14, ${58 + index * 24})`}>
+                      {row.key === "patient" && <rect x="-6" y="-15" width={boxWidth - 16} height="21" rx="7" fill="var(--accent-soft)" />}
+                      <circle cx="3" cy="-4" r="3.5" fill={row.color} />
+                      <text x="15" y="0" className={row.key === "patient" ? "tooltip-title" : "tooltip-line"} fill={row.color}>{row.label}</text>
+                      <text x={boxWidth - 28} y="0" textAnchor="end" className={row.key === "patient" ? "tooltip-title" : "tooltip-line"} fill={row.color}>
                         {row.value === undefined ? "-" : `${trimNumber(row.value, yDigits)} ${unit}`}
                       </text>
                     </g>

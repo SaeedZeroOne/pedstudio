@@ -18,6 +18,12 @@ type Props = {
   lines?: { label: string; value: number; color: string }[];
 };
 
+type HoverState = {
+  sx: number;
+  sy: number;
+  nearest?: VitalPoint;
+};
+
 const width = 900;
 const fallbackColors = ["#1d3557", "#00798c", "#8a6f3d"];
 const seriesColors: Record<string, string> = {
@@ -40,10 +46,10 @@ function smoothPath(points: { x: number; y: number }[]) {
     const p1 = points[index];
     const p2 = points[index + 1];
     const p3 = points[Math.min(points.length - 1, index + 2)];
-    const cp1x = p1.x + (p2.x - p0.x) / 6;
-    const cp1y = p1.y + (p2.y - p0.y) / 6;
-    const cp2x = p2.x - (p3.x - p1.x) / 6;
-    const cp2y = p2.y - (p3.y - p1.y) / 6;
+    const cp1x = p1.x + (p2.x - p0.x) / 4.5;
+    const cp1y = p1.y + (p2.y - p0.y) / 4.5;
+    const cp2x = p2.x - (p3.x - p1.x) / 4.5;
+    const cp2y = p2.y - (p3.y - p1.y) / 4.5;
     commands.push(`C ${cp1x.toFixed(2)} ${cp1y.toFixed(2)}, ${cp2x.toFixed(2)} ${cp2y.toFixed(2)}, ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`);
   }
   return commands.join(" ");
@@ -52,6 +58,7 @@ function smoothPath(points: { x: number; y: number }[]) {
 export function VitalChart({ title, unit, yLabel, points, bands = [], lines = [] }: Props) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [hover, setHover] = useState<HoverState | null>(null);
   const viewport = useViewport();
   const compact = viewport.width < 760 || viewport.height < 720;
   const height = Math.round(
@@ -78,9 +85,22 @@ export function VitalChart({ title, unit, yLabel, points, bands = [], lines = []
     const innerHeight = chartHeight - margin.top - margin.bottom;
     const xScale = (x: number) => margin.left + (x / xMax) * innerWidth;
     const yScale = (y: number) => margin.top + (1 - (y - yMin) / (yMax - yMin)) * innerHeight;
+    function handleMove(event: React.MouseEvent<SVGSVGElement>) {
+      const rect = event.currentTarget.getBoundingClientRect();
+      const sx = ((event.clientX - rect.left) / rect.width) * width;
+      const sy = ((event.clientY - rect.top) / rect.height) * chartHeight;
+      if (sx < margin.left || sx > margin.left + innerWidth || sy < margin.top || sy > margin.top + innerHeight) {
+        setHover(null);
+        return;
+      }
+      const nearest = finitePoints
+        .map((point) => ({ point, distance: Math.hypot(xScale(point.x) - sx, yScale(point.y as number) - sy) }))
+        .sort((a, b) => a.distance - b.distance)[0];
+      setHover({ sx, sy, nearest: nearest?.distance <= 28 ? nearest.point : undefined });
+    }
 
     return (
-      <svg className="growth-svg" viewBox={`0 0 ${width} ${chartHeight}`} role="img" aria-label={title}>
+      <svg className="growth-svg" viewBox={`0 0 ${width} ${chartHeight}`} onMouseMove={handleMove} onMouseLeave={() => setHover(null)} role="img" aria-label={title}>
         <rect x="0" y="0" width={width} height={chartHeight} fill="#ffffff" />
         {bands.map((band) => (
           <g key={band.label}>
@@ -125,6 +145,28 @@ export function VitalChart({ title, unit, yLabel, points, bands = [], lines = []
             </g>
           );
         })}
+        {hover?.nearest &&
+          (() => {
+            const item = hover.nearest;
+            const color = seriesColors[item.series ?? "Value"] ?? fallbackColors[0];
+            const boxWidth = 236;
+            const boxHeight = 88;
+            const tx = hover.sx > width - boxWidth - 18 ? hover.sx - boxWidth - 12 : hover.sx + 12;
+            const ty = Math.max(margin.top + 4, Math.min(hover.sy - 48, chartHeight - boxHeight - 8));
+            return (
+              <g>
+                <line x1={xScale(item.x)} x2={xScale(item.x)} y1={margin.top} y2={margin.top + innerHeight} stroke="#6d8791" strokeDasharray="4 4" />
+                <circle cx={xScale(item.x)} cy={yScale(item.y as number)} r="6" fill={color} stroke="#ffffff" strokeWidth="2.4" />
+                <g transform={`translate(${tx}, ${ty})`}>
+                  <rect width={boxWidth} height={boxHeight} rx="12" fill="var(--surface)" stroke="var(--line-strong)" />
+                  <rect x="1" y="1" width={boxWidth - 2} height="34" rx="11" fill="var(--surface-muted)" />
+                  <text x="14" y="22" className="tooltip-title">{item.series ?? title}</text>
+                  <text x="14" y="54" className="tooltip-muted">{item.label}</text>
+                  <text x="14" y="75" className="tooltip-title" fill={color}>{trim(item.y as number, 1)} {unit}</text>
+                </g>
+              </g>
+            );
+          })()}
       </svg>
     );
   };
