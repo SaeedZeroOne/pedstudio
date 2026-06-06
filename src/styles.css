@@ -1,15 +1,49 @@
 @font-face {
-  font-family: "Parastoo";
+  font-family: "Inter";
   font-style: normal;
-  font-weight: 400;
-  src: url("./assets/fonts/Parastoo-Regular.ttf") format("truetype");
+  font-weight: 300;
+  src: url("./assets/fonts/Inter-Light.ttf") format("truetype");
+  font-display: swap;
 }
 
 @font-face {
-  font-family: "Parastoo";
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 400;
+  src: url("./assets/fonts/Inter-Regular.ttf") format("truetype");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Inter";
   font-style: normal;
   font-weight: 700;
-  src: url("./assets/fonts/Parastoo-Bold.ttf") format("truetype");
+  src: url("./assets/fonts/Inter-Bold.ttf") format("truetype");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Vazir";
+  font-style: normal;
+  font-weight: 300;
+  src: url("./assets/fonts/Vazir-Light.ttf") format("truetype");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Vazir";
+  font-style: normal;
+  font-weight: 400;
+  src: url("./assets/fonts/Vazir-Regular.ttf") format("truetype");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Vazir";
+  font-style: normal;
+  font-weight: 700;
+  src: url("./assets/fonts/Vazir-Bold.ttf") format("truetype");
+  font-display: swap;
 }
 
 @font-face {
@@ -20,10 +54,13 @@
 }
 
 :root {
-  --bg: #f3f9fb;
-  --surface: #ffffff;
-  --surface-muted: #f6fafb;
+  --bg: #dcebee;
+  --surface: #f9fcfd;
+  --surface-muted: #eaf4f7;
   --surface-raised: #ffffff;
+  --field: #dcebee;
+  --field-hover: #e5f2f5;
+  --control: #eff7f9;
   --line: #d7e7ec;
   --line-strong: #adc9d3;
   --line-soft: #edf6f8;
@@ -52,12 +89,13 @@
   --space-6: 24px;
   color: var(--text);
   background: var(--bg);
-  font-family: "SF Pro Text", "SF Pro Display", -apple-system, BlinkMacSystemFont, Inter, "Segoe UI", sans-serif;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
   font-synthesis: none;
-  letter-spacing: 0.005em;
+  letter-spacing: 0;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  font-feature-settings: "cv02", "cv03", "cv04", "kern";
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "kern", "liga", "cv02", "cv03", "cv04";
 }
 
 html {
@@ -71,6 +109,9 @@ html[data-theme="dark"] {
   --surface: #16262c;
   --surface-muted: #1c3037;
   --surface-raised: #1a2c33;
+  --field: #1d333b;
+  --field-hover: #243d46;
+  --control: #1c3037;
   --line: #29424b;
   --line-strong: #3b5963;
   --line-soft: #203840;
@@ -143,8 +184,11 @@ select {
 }
 
 .app-shell {
+  --fixed-header-offset: 0px;
   --overscroll-bottom: 0px;
   --overscroll-top: 0px;
+  --app-stretch: 1;
+  --app-stretch-shift: 0px;
   background: transparent;
   border: 0;
   border-radius: 0;
@@ -157,46 +201,9 @@ select {
   position: relative;
 }
 
-.app-shell::before,
-.app-shell::after {
-  background: rgba(47, 159, 214, 0.16);
-  content: "";
-  left: 0;
-  pointer-events: none;
-  position: fixed;
-  right: 0;
-  opacity: 0;
-  transition: height 180ms cubic-bezier(0.2, 0.85, 0.28, 1), opacity 180ms ease;
-  z-index: 20;
-}
-
-.app-shell::before {
-  border-bottom-left-radius: 28px;
-  border-bottom-right-radius: 28px;
-  height: var(--overscroll-top);
-  top: 0;
-}
-
-.app-shell::after {
-  border-top-left-radius: 28px;
-  border-top-right-radius: 28px;
-  bottom: 0;
-  height: var(--overscroll-bottom);
-}
-
-.app-shell.is-overscrolling-top::before,
-.app-shell.is-overscrolling-bottom::after {
-  opacity: 1;
-}
-
-.theme-dark.app-shell::before,
-.theme-dark.app-shell::after {
-  background: rgba(73, 184, 234, 0.18);
-}
-
 .topbar {
   align-items: center;
-  background: rgba(243, 249, 251, 0.94);
+  background: color-mix(in srgb, var(--bg) 94%, transparent);
   backdrop-filter: blur(18px);
   border-bottom: 1px solid rgba(183, 223, 232, 0.24);
   display: flex;
@@ -221,7 +228,7 @@ select {
 }
 
 .theme-dark .topbar {
-  background: rgba(15, 27, 32, 0.94);
+  background: color-mix(in srgb, var(--bg) 94%, transparent);
   border-bottom-color: rgba(50, 113, 141, 0.24);
 }
 
@@ -306,7 +313,7 @@ select {
 .app-kicker {
   color: var(--accent);
   font-size: 0.72rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.08em;
   margin-bottom: 2px;
   text-transform: uppercase;
@@ -321,7 +328,7 @@ select {
 
 .topbar h1 {
   font-size: clamp(1.6rem, 2.2vw, 2rem);
-  font-weight: 760;
+  font-weight: 700;
   letter-spacing: 0;
 }
 
@@ -329,6 +336,7 @@ select {
 .panel-heading p {
   color: var(--muted);
   font-size: 0.88rem;
+  font-weight: 300;
   margin: 3px 0 0;
 }
 
@@ -338,6 +346,27 @@ select {
 .heading-actions {
   align-items: center;
   display: flex;
+}
+
+.workspace,
+.landing-workspace,
+.patient-workspace {
+  transform-origin: top center;
+  transition: transform 220ms cubic-bezier(0.2, 0.85, 0.24, 1);
+}
+
+.app-shell.is-overscrolling-top .workspace,
+.app-shell.is-overscrolling-top .landing-workspace,
+.app-shell.is-overscrolling-top .patient-workspace {
+  transform: translateY(var(--app-stretch-shift)) scaleY(var(--app-stretch));
+  transform-origin: top center;
+}
+
+.app-shell.is-overscrolling-bottom .workspace,
+.app-shell.is-overscrolling-bottom .landing-workspace,
+.app-shell.is-overscrolling-bottom .patient-workspace {
+  transform: translateY(var(--app-stretch-shift)) scaleY(var(--app-stretch));
+  transform-origin: bottom center;
 }
 
 .top-actions,
@@ -358,8 +387,8 @@ select {
 
 button {
   align-items: center;
-  background: var(--surface);
-  border: 1px solid var(--line);
+  background: var(--control);
+  border: 0;
   border-radius: 999px;
   color: var(--text-soft);
   cursor: pointer;
@@ -378,8 +407,7 @@ button {
 }
 
 button:hover {
-  background: var(--surface-muted);
-  border-color: var(--line-strong);
+  background: var(--field-hover);
   color: var(--text);
 }
 
@@ -407,7 +435,7 @@ button:disabled {
 }
 
 .save-button {
-  font-weight: 750;
+  font-weight: 700;
   margin-bottom: var(--space-4);
   min-height: 42px;
 }
@@ -491,7 +519,7 @@ button:disabled {
   color: #577082;
   display: flex;
   font-size: 0.9rem;
-  font-weight: 680;
+  font-weight: 400;
   gap: 12px;
   min-height: 48px;
   padding: 0 12px;
@@ -533,7 +561,7 @@ button:disabled {
   margin-left: 260px;
   min-height: 0;
   overflow: hidden;
-  padding: 14px 24px 0 24px;
+  padding: 24px 24px 0 24px;
 }
 
 .entry-panel,
@@ -543,7 +571,7 @@ button:disabled {
 .metric {
   animation: surface-in 220ms ease-out both;
   background: var(--surface);
-  border: 1px solid var(--line);
+  border: 0;
   border-radius: var(--radius-lg);
   box-shadow: none;
 }
@@ -570,7 +598,7 @@ button:disabled {
 .panel-heading h2 {
   color: var(--text);
   font-size: 0.98rem;
-  font-weight: 780;
+  font-weight: 700;
 }
 
 .panel-heading {
@@ -580,8 +608,8 @@ button:disabled {
 }
 
 .input-section {
-  background: #f8fbfc;
-  border: 1px solid #e2edf1;
+  background: var(--surface-muted);
+  border: 0;
   border-radius: var(--radius);
   display: grid;
   gap: var(--space-3);
@@ -590,8 +618,7 @@ button:disabled {
 }
 
 .input-section:hover {
-  background: #ffffff;
-  border-color: var(--line);
+  background: var(--surface-raised);
   transform: translateY(-1px);
 }
 
@@ -604,7 +631,7 @@ button:disabled {
   color: var(--text-soft);
   display: flex;
   font-size: 0.82rem;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .input-section h3::before {
@@ -642,7 +669,7 @@ label {
   color: #506273;
   display: grid;
   font-size: 0.73rem;
-  font-weight: 780;
+  font-weight: 400;
   gap: 6px;
 }
 
@@ -650,8 +677,8 @@ input,
 select,
 textarea {
   appearance: none;
-  background: #ffffff;
-  border: 1px solid #dbe9ee;
+  background: var(--field);
+  border: 0;
   border-radius: var(--radius);
   color: var(--text);
   caret-color: var(--accent-strong);
@@ -692,8 +719,8 @@ select {
 }
 
 .jalali-picker div {
-  background: #ffffff;
-  border: 1px solid #dbe9ee;
+  background: var(--field);
+  border: 0;
   border-radius: var(--radius);
   direction: ltr;
   display: grid;
@@ -705,8 +732,7 @@ select {
 
 .jalali-picker div:hover,
 .jalali-picker:focus-within div {
-  background: #ffffff;
-  border-color: var(--accent);
+  background: var(--surface-raised);
 }
 
 .jalali-picker:focus-within div {
@@ -723,16 +749,16 @@ select {
 
 .app-shell.rtl {
   direction: rtl;
-  font-family: Parastoo, Tahoma, "Segoe UI", sans-serif;
+  font-family: Vazir, Tahoma, "Segoe UI", sans-serif;
 }
 
 .app-shell.rtl :where(p, span, small, label, input, select, textarea, button, .metric, .score-row, .alert) {
-  font-family: Parastoo, Tahoma, "Segoe UI", sans-serif;
+  font-family: Vazir, Tahoma, "Segoe UI", sans-serif;
   line-height: 1.55;
 }
 
 .app-shell.rtl :where(h1, h2, h3, .app-kicker, .panel-heading h2, .panel-title h2, .input-section h3) {
-  font-family: Lalezar, Parastoo, Tahoma, sans-serif;
+  font-family: Lalezar, Vazir, Tahoma, sans-serif;
   font-weight: 400;
   letter-spacing: 0;
 }
@@ -800,7 +826,7 @@ select {
 
 .app-shell.rtl .side-nav,
 .app-shell.rtl .side-nav-item {
-  font-family: Lalezar, Parastoo, Tahoma, sans-serif;
+  font-family: Lalezar, Vazir, Tahoma, sans-serif;
   font-weight: 400;
 }
 
@@ -847,7 +873,7 @@ textarea:disabled {
   color: #315d65;
   display: flex;
   font-size: 0.82rem;
-  font-weight: 750;
+  font-weight: 400;
   grid-column: 1 / -1;
   min-height: 38px;
   padding: 8px 10px;
@@ -878,8 +904,7 @@ textarea:disabled {
 }
 
 .metric:hover {
-  background: #ffffff;
-  border-color: var(--line-strong);
+  background: var(--surface-raised);
   transform: translateY(-1px);
 }
 
@@ -889,16 +914,18 @@ textarea:disabled {
 .velocity-list span {
   color: var(--muted);
   font-size: 0.8rem;
+  font-weight: 300;
 }
 
 .metric strong {
   color: var(--text);
   font-size: 1.55rem;
-  font-weight: 820;
+  font-weight: 700;
 }
 
 .metric small {
   color: var(--faint);
+  font-weight: 300;
   line-height: 1.35;
 }
 
@@ -944,7 +971,7 @@ textarea:disabled {
   color: #39799c;
   display: inline-flex;
   font-size: 0.86rem;
-  font-weight: 760;
+  font-weight: 400;
   justify-content: center;
   min-height: 30px;
   padding: 6px 10px;
@@ -1014,6 +1041,7 @@ textarea:disabled {
 
 .alert span {
   color: var(--muted);
+  font-weight: 300;
 }
 
 .vital-grid {
@@ -1040,23 +1068,24 @@ textarea:disabled {
 .vital-detail span {
   color: var(--muted);
   font-size: 0.8rem;
-  font-weight: 760;
+  font-weight: 400;
 }
 
 .vital-detail strong {
   color: var(--text);
   font-size: 1.12rem;
-  font-weight: 820;
+  font-weight: 700;
 }
 
 .vital-detail small {
   color: var(--accent);
-  font-weight: 780;
+  font-weight: 400;
 }
 
 .vital-detail p {
   color: var(--muted);
   font-size: 0.82rem;
+  font-weight: 300;
   line-height: 1.4;
   margin: 0;
 }
@@ -1114,30 +1143,30 @@ textarea:disabled {
 .axis-tick {
   fill: var(--muted);
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 400;
 }
 
 .axis-label {
   fill: var(--text-soft);
   font-size: 13px;
-  font-weight: 780;
+  font-weight: 400;
 }
 
 .tooltip-title {
   fill: var(--text);
   font-size: 13px;
-  font-weight: 780;
+  font-weight: 700;
 }
 
 .tooltip-line {
   font-size: 12px;
-  font-weight: 740;
+  font-weight: 400;
 }
 
 .tooltip-muted {
   fill: var(--muted);
   font-size: 11px;
-  font-weight: 650;
+  font-weight: 400;
 }
 
 .chart-modal,
@@ -1378,7 +1407,7 @@ textarea:disabled {
   min-height: 0;
   overflow: auto;
   overscroll-behavior: contain;
-  padding: 14px 24px 22px 24px;
+  padding: 24px 24px 22px 24px;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -1538,7 +1567,7 @@ textarea:disabled {
   color: var(--accent-strong) !important;
   display: inline-flex;
   font-size: 0.74rem;
-  font-weight: 760;
+  font-weight: 400;
   justify-self: start;
   line-height: 1.2;
   margin-top: 2px;
@@ -1552,7 +1581,7 @@ textarea:disabled {
 .edit-visit-line {
   color: var(--accent-strong) !important;
   font-size: 0.76rem;
-  font-weight: 780;
+  font-weight: 400;
   margin-top: 3px;
 }
 
@@ -1575,6 +1604,7 @@ textarea:disabled {
 .card-main-action span,
 .card-main-action small {
   color: var(--muted);
+  font-weight: 300;
 }
 
 .patient-data-line {
@@ -1588,7 +1618,7 @@ textarea:disabled {
   color: #6f8797;
   flex: 0 0 auto;
   font-size: 0.68rem;
-  font-weight: 820;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
@@ -1667,13 +1697,13 @@ textarea:disabled {
 .profile-item span {
   color: var(--muted);
   font-size: 0.78rem;
-  font-weight: 760;
+  font-weight: 400;
 }
 
 .profile-item strong {
   color: var(--text);
   font-size: 0.95rem;
-  font-weight: 760;
+  font-weight: 400;
   line-height: 1.4;
   white-space: pre-wrap;
 }
@@ -2108,5 +2138,175 @@ textarea:disabled {
     max-height: none;
     min-height: auto;
     overflow: visible;
+  }
+}
+
+@media screen {
+  input,
+  select,
+  textarea,
+  .jalali-picker div,
+  .entry-panel,
+  .score-panel,
+  .chart-panel,
+  .longitudinal,
+  .metric,
+  .lookup-panel,
+  .input-section,
+  .patient-card,
+  .visit-session-card,
+  .profile-item,
+  .converted-date,
+  .score-row span:nth-child(3),
+  .score-row span:nth-child(4),
+  .diagnosis-line {
+    border: 0 !important;
+  }
+
+  input,
+  select,
+  textarea,
+  .jalali-picker div {
+    background-color: var(--field) !important;
+  }
+
+  input:hover,
+  select:hover,
+  textarea:hover,
+  .jalali-picker div:hover {
+    background-color: var(--field-hover) !important;
+  }
+
+  input:focus,
+  select:focus,
+  textarea:focus,
+  .jalali-picker:focus-within div {
+    background-color: var(--surface-raised) !important;
+  }
+
+  .entry-panel,
+  .score-panel,
+  .chart-panel,
+  .longitudinal,
+  .lookup-panel {
+    background: var(--surface) !important;
+  }
+
+  .input-section,
+  .metric,
+  .patient-card,
+  .visit-session-card,
+  .profile-item {
+    background: var(--surface-muted) !important;
+  }
+
+  .input-section:hover,
+  .metric:hover,
+  .patient-card:hover,
+  .visit-session-card:hover,
+  .profile-item:hover {
+    background: var(--surface-muted) !important;
+  }
+
+  .score-row span:nth-child(3),
+  .score-row span:nth-child(4),
+  .converted-date,
+  .diagnosis-line {
+    background: var(--accent-soft) !important;
+  }
+
+  button,
+  .language-switch,
+  .theme-switch,
+  .compact-primary,
+  .top-actions button,
+  .side-nav-controls .language-switch,
+  .side-nav-controls .theme-switch {
+    border: 0 !important;
+  }
+}
+
+@media (max-width: 1100px) {
+  html,
+  body,
+  #root {
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .app-shell {
+    display: block !important;
+    height: auto !important;
+    min-height: 100dvh !important;
+    overflow: visible !important;
+  }
+
+  .topbar {
+    background: transparent !important;
+    backdrop-filter: none;
+    border-bottom: 0;
+    display: flex;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-top: calc(28px + env(safe-area-inset-top, 0px)) !important;
+    padding-bottom: 18px !important;
+    position: static !important;
+    top: auto !important;
+    transform: none !important;
+    z-index: auto;
+  }
+
+  .app-shell.rtl .topbar {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .mobile-topbar-hidden .topbar {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transform: none !important;
+  }
+
+  .workspace,
+  .landing-workspace,
+  .patient-workspace {
+    display: grid;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    scroll-padding-top: 0;
+  }
+
+  .topbar + .workspace,
+  .topbar + .landing-workspace,
+  .topbar + .patient-workspace {
+    margin-top: 22px !important;
+  }
+
+  .landing-workspace > .lookup-panel:first-child,
+  .patient-workspace > .lookup-panel:first-child,
+  .workspace > .entry-panel:first-child {
+    margin-top: 0 !important;
+  }
+
+  .lookup-panel {
+    overflow: visible !important;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1100px) {
+  .topbar,
+  .workspace,
+  .landing-workspace,
+  .patient-workspace {
+    margin-left: 72px !important;
+  }
+
+  .app-shell.rtl .topbar,
+  .app-shell.rtl .workspace,
+  .app-shell.rtl .landing-workspace,
+  .app-shell.rtl .patient-workspace {
+    margin-left: 0 !important;
+    margin-right: 72px !important;
   }
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { Activity, ArrowLeft, CheckCircle2, FileDown, Globe2, HelpCircle, Moon, Plus, Printer, Save, Search, Stethoscope, Sun, Trash2, UserPlus, Users } from "lucide-react";
 import { calculateAge } from "./lib/age";
@@ -472,10 +472,17 @@ function App() {
   const [jalaliDob, setJalaliDob] = useState({ year: defaultJalali.jy, month: defaultJalali.jm, day: defaultJalali.jd });
   const [draft, setDraft] = useState<Visit>(guestVisits[0]);
   const [followUpInterval, setFollowUpInterval] = useState<{ value: number | undefined; unit: FollowUpUnit }>({ value: undefined, unit: "months" });
+  const suppressHistoryRef = useRef(false);
+  const shellRef = useRef<HTMLElement | null>(null);
+  const headerRef = useRef<HTMLElement | null>(null);
   const labels = uiText[language];
   const d = (value: string | number | undefined) => localizeDigits(value, language);
   const shellClass = `app-shell ${language === "fa" ? "rtl" : ""} ${theme === "dark" ? "theme-dark" : "theme-light"} ${hideMobileTopbar ? "mobile-topbar-hidden" : ""} ${overscroll.top ? "is-overscrolling-top" : ""} ${overscroll.bottom ? "is-overscrolling-bottom" : ""}`;
-  const shellStyle = { "--overscroll-top": `${overscroll.top}px`, "--overscroll-bottom": `${overscroll.bottom}px` } as React.CSSProperties;
+  const overscrollPull = Math.max(overscroll.top, overscroll.bottom);
+  const shellStyle = {
+    "--app-stretch": `${1 + Math.min(overscrollPull, 72) / 900}`,
+    "--app-stretch-shift": `${overscroll.top ? overscroll.top * 0.18 : overscroll.bottom ? -overscroll.bottom * 0.18 : 0}px`,
+  } as React.CSSProperties;
 
   useEffect(() => {
     localStorage.setItem(storageKey, JSON.stringify(patients));
@@ -494,12 +501,31 @@ function App() {
   useEffect(() => {
     localStorage.setItem(themeStorageKey, theme);
     document.documentElement.dataset.theme = theme;
-    const themeColor = theme === "dark" ? "#0f1b20" : "#f3f9fb";
+    const themeColor = theme === "dark" ? "#0f1b20" : "#e6f1f4";
     document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]').forEach((meta) => {
       meta.content = themeColor;
     });
-    document.querySelector<HTMLMetaElement>('meta[name="apple-mobile-web-app-status-bar-style"]')?.setAttribute("content", "black-translucent");
+    document.querySelector<HTMLMetaElement>('meta[name="apple-mobile-web-app-status-bar-style"]')?.setAttribute("content", "default");
   }, [theme]);
+
+  useLayoutEffect(() => {
+    const shell = shellRef.current;
+    const header = headerRef.current;
+    if (!shell || !header) return;
+
+    const applyOffset = () => {
+      shell.style.setProperty("--fixed-header-offset", `${Math.ceil(header.getBoundingClientRect().height + 18)}px`);
+    };
+
+    applyOffset();
+    const observer = new ResizeObserver(applyOffset);
+    observer.observe(header);
+    window.addEventListener("resize", applyOffset);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", applyOffset);
+    };
+  }, [screen, language, theme, isGuest, selectedPatientId]);
 
   useEffect(() => {
     let lastY = window.scrollY;
@@ -572,6 +598,31 @@ function App() {
       window.removeEventListener("touchcancel", reset);
     };
   }, []);
+
+  useEffect(() => {
+    const state = { screen, selectedPatientId, isGuest };
+    if (suppressHistoryRef.current) {
+      suppressHistoryRef.current = false;
+      window.history.replaceState(state, "", window.location.href);
+      return;
+    }
+    if (window.history.state?.screen === screen && window.history.state?.selectedPatientId === selectedPatientId && window.history.state?.isGuest === isGuest) return;
+    window.history.pushState(state, "", window.location.href);
+  }, [screen, selectedPatientId, isGuest]);
+
+  useEffect(() => {
+    function handlePopState() {
+      suppressHistoryRef.current = true;
+      if (screen === "assessment") {
+        setScreen(isGuest ? "lookup" : "visits");
+      } else if (screen === "visits") {
+        setScreen("lookup");
+      }
+    }
+    window.history.replaceState({ screen, selectedPatientId, isGuest }, "", window.location.href);
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [screen, selectedPatientId, isGuest]);
 
   const selectedRecord = patients.find((patient) => patient.id === selectedPatientId);
   const patient: Patient = isGuest ? guestPatient : selectedRecord ?? defaultPatient;
@@ -810,9 +861,9 @@ function App() {
 
   if (screen === "lookup") {
     return (
-      <main className={shellClass} style={shellStyle} lang={language} dir={language === "fa" ? "rtl" : "ltr"}>
+      <main ref={shellRef} className={shellClass} style={shellStyle} lang={language} dir={language === "fa" ? "rtl" : "ltr"}>
         <SideNav active="patients" labels={labels} language={language} setLanguage={setLanguage} theme={theme} setTheme={setTheme} />
-        <header className="topbar">
+        <header ref={headerRef} className="topbar">
           <div>
             <div className="app-kicker">Ped Studio</div>
             <h1>{labels.patientLookup}</h1>
@@ -924,9 +975,9 @@ function App() {
 
   if (screen === "visits" && selectedRecord) {
     return (
-      <main className={shellClass} style={shellStyle} lang={language} dir={language === "fa" ? "rtl" : "ltr"}>
+      <main ref={shellRef} className={shellClass} style={shellStyle} lang={language} dir={language === "fa" ? "rtl" : "ltr"}>
         <SideNav active="visits" labels={labels} language={language} setLanguage={setLanguage} theme={theme} setTheme={setTheme} />
-        <header className="topbar">
+        <header ref={headerRef} className="topbar">
           <div>
             <div className="app-kicker">Ped Studio</div>
             <h1>{selectedRecord.fullName}</h1>
@@ -992,9 +1043,9 @@ function App() {
   }
 
   return (
-    <main className={shellClass} style={shellStyle} lang={language} dir={language === "fa" ? "rtl" : "ltr"}>
+    <main ref={shellRef} className={shellClass} style={shellStyle} lang={language} dir={language === "fa" ? "rtl" : "ltr"}>
       <SideNav active="assessment" labels={labels} language={language} setLanguage={setLanguage} theme={theme} setTheme={setTheme} />
-      <header className="topbar">
+      <header ref={headerRef} className="topbar">
         <div>
           <div className="app-kicker">Ped Studio</div>
           <h1>{patientTitle}</h1>

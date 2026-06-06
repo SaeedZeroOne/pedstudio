@@ -5,10 +5,9 @@
   "start_url": ".",
   "scope": ".",
   "display": "standalone",
-  "display_override": ["standalone", "fullscreen"],
   "orientation": "any",
-  "background_color": "#f3f9fb",
-  "theme_color": "#f3f9fb",
+  "background_color": "#e6f1f4",
+  "theme_color": "#e6f1f4",
   "categories": ["health", "medical", "productivity"],
   "icons": [
     {
