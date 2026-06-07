@@ -462,7 +462,7 @@ function App() {
   const [formulaInfo, setFormulaInfo] = useState<{ title: string; body: string } | null>(null);
   const [bpMethod, setBpMethod] = useState<BpMethod>("table");
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved">("idle");
-  const [hideMobileTopbar, setHideMobileTopbar] = useState(false);
+  const hideMobileTopbar = false;
   const [overscroll, setOverscroll] = useState({ top: 0, bottom: 0 });
   const overscrollRef = useRef(overscroll);
   const [guestPatient, setGuestPatient] = useState<Patient>(defaultPatient);
@@ -528,28 +528,6 @@ function App() {
   }, [screen, language, theme, isGuest, selectedPatientId]);
 
   useEffect(() => {
-    let lastY = window.scrollY;
-    function handleScroll() {
-      if (window.innerWidth > 640) {
-        setHideMobileTopbar(false);
-        return;
-      }
-      const currentY = window.scrollY;
-      if (currentY <= 8) setHideMobileTopbar(false);
-      else if (currentY > lastY && currentY > 64) setHideMobileTopbar(true);
-      else if (currentY < lastY) setHideMobileTopbar(false);
-      lastY = currentY;
-    }
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    window.addEventListener("resize", handleScroll);
-    handleScroll();
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("resize", handleScroll);
-    };
-  }, []);
-
-  useEffect(() => {
     let startY = 0;
     let active = false;
     const maxPull = 74;
@@ -562,7 +540,7 @@ function App() {
     const scrollElement = () => document.scrollingElement ?? document.documentElement;
 
     function handleTouchStart(event: TouchEvent) {
-      if (window.innerWidth > 760 || event.touches.length !== 1) return;
+      if (window.innerWidth <= 640 || window.innerWidth > 760 || event.touches.length !== 1) return;
       active = true;
       startY = event.touches[0].clientY;
     }
@@ -683,6 +661,24 @@ function App() {
     if (!selectedPatientId) return;
     setPatients((prev) => prev.map((record) => record.id === selectedPatientId ? updater(record) : record));
   }
+
+  function upsertCurrentVisit(next: Visit) {
+    if (isGuest) {
+      setGuestVisits((prev) => [...prev.filter((visit) => visit.id !== next.id), next].sort((a, b) => a.date.localeCompare(b.date)));
+      return;
+    }
+    updatePatientRecord((record) => ({
+      ...record,
+      diagnosis: next.diagnosis || record.diagnosis,
+      visits: [...record.visits.filter((visit) => visit.id !== next.id), next].sort((a, b) => a.date.localeCompare(b.date)),
+    }));
+  }
+
+  useEffect(() => {
+    if (screen !== "assessment") return;
+    if (!isGuest && !selectedPatientId) return;
+    upsertCurrentVisit(draft);
+  }, [draft, screen, isGuest, selectedPatientId]);
 
   const setPatientField = <K extends keyof Patient>(key: K, value: Patient[K]) => {
     if (isGuest) setGuestPatient((prev) => ({ ...prev, [key]: value }));
@@ -809,15 +805,7 @@ function App() {
   function saveVisit() {
     setSaveState("saving");
     const next = { ...draft, id: draft.id || crypto.randomUUID() };
-    if (isGuest) {
-      setGuestVisits((prev) => [...prev.filter((v) => v.id !== next.id), next].sort((a, b) => a.date.localeCompare(b.date)));
-    } else {
-      updatePatientRecord((record) => ({
-        ...record,
-        diagnosis: next.diagnosis || record.diagnosis,
-        visits: [...record.visits.filter((v) => v.id !== next.id), next].sort((a, b) => a.date.localeCompare(b.date)),
-      }));
-    }
+    upsertCurrentVisit(next);
     setDraft(next);
     window.setTimeout(() => {
       setSaveState("saved");
@@ -864,7 +852,7 @@ function App() {
       <main ref={shellRef} className={shellClass} style={shellStyle} lang={language} dir={language === "fa" ? "rtl" : "ltr"}>
         <SideNav active="patients" labels={labels} language={language} setLanguage={setLanguage} theme={theme} setTheme={setTheme} />
         <header ref={headerRef} className="topbar">
-          <div>
+          <div className="topbar-title">
             <div className="app-kicker">Ped Studio</div>
             <h1>{labels.patientLookup}</h1>
           </div>
@@ -978,7 +966,7 @@ function App() {
       <main ref={shellRef} className={shellClass} style={shellStyle} lang={language} dir={language === "fa" ? "rtl" : "ltr"}>
         <SideNav active="visits" labels={labels} language={language} setLanguage={setLanguage} theme={theme} setTheme={setTheme} />
         <header ref={headerRef} className="topbar">
-          <div>
+          <div className="topbar-title">
             <div className="app-kicker">Ped Studio</div>
             <h1>{selectedRecord.fullName}</h1>
             <p>{d(selectedRecord.id)} - {selectedRecord.nationalId ? d(selectedRecord.nationalId) : labels.noNationalId}</p>
@@ -988,7 +976,7 @@ function App() {
               <LanguageSwitch language={language} setLanguage={setLanguage} label={labels.language} />
               <ThemeSwitch theme={theme} setTheme={setTheme} labels={labels} />
             </div>
-            <button onClick={() => setScreen("lookup")} title={labels.patients}><ArrowLeft size={18} /> {labels.patients}</button>
+            <button className="back-action" onClick={() => setScreen("lookup")} title={labels.patients}><ArrowLeft size={18} /> {labels.patients}</button>
             <button className="primary compact-primary" onClick={() => startVisit()} title={labels.todayVisit}><Plus size={18} /> {labels.todayVisit}</button>
           </div>
         </header>
@@ -1046,7 +1034,7 @@ function App() {
     <main ref={shellRef} className={shellClass} style={shellStyle} lang={language} dir={language === "fa" ? "rtl" : "ltr"}>
       <SideNav active="assessment" labels={labels} language={language} setLanguage={setLanguage} theme={theme} setTheme={setTheme} />
       <header ref={headerRef} className="topbar">
-        <div>
+        <div className="topbar-title">
           <div className="app-kicker">Ped Studio</div>
           <h1>{patientTitle}</h1>
           <p>{patientSub}</p>
@@ -1056,7 +1044,7 @@ function App() {
             <LanguageSwitch language={language} setLanguage={setLanguage} label={labels.language} />
             <ThemeSwitch theme={theme} setTheme={setTheme} labels={labels} />
           </div>
-          <button onClick={() => setScreen(isGuest ? "lookup" : "visits")} title={isGuest ? labels.patients : labels.visits}><ArrowLeft size={18} /> {isGuest ? labels.patients : labels.visits}</button>
+          <button className="back-action" onClick={() => setScreen(isGuest ? "lookup" : "visits")} title={isGuest ? labels.patients : labels.visits}><ArrowLeft size={18} /> {isGuest ? labels.patients : labels.visits}</button>
           <button onClick={exportJson} title={labels.export}><FileDown size={18} /> {labels.export}</button>
           <button onClick={() => window.print()} title={labels.print}><Printer size={18} /> {labels.print}</button>
         </div>

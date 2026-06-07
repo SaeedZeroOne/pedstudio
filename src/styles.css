@@ -2021,20 +2021,69 @@ textarea:disabled {
 }
 
 @media (max-width: 640px) {
+  html,
+  body,
+  #root {
+    height: auto !important;
+    min-height: 100dvh !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior-y: auto !important;
+    touch-action: auto !important;
+  }
+
+  body::before {
+    display: none;
+  }
+
+  .app-shell {
+    display: block !important;
+    height: auto !important;
+    min-height: 100dvh !important;
+    overflow: visible !important;
+    overscroll-behavior-y: auto !important;
+    touch-action: auto !important;
+  }
+
   .side-nav {
     display: none;
   }
 
   .topbar {
-    gap: 10px;
+    align-items: stretch;
+    display: grid !important;
+    gap: 12px;
+    grid-template-columns: 1fr;
+    padding-left: calc(14px + env(safe-area-inset-left, 0px)) !important;
+    padding-right: calc(14px + env(safe-area-inset-right, 0px)) !important;
+  }
+
+  .topbar-title {
+    min-width: 0;
   }
 
   .top-actions {
-    display: flex;
+    display: flex !important;
     flex-wrap: nowrap;
     gap: 6px;
-    justify-content: flex-start;
+    justify-content: flex-end;
     overflow: hidden;
+    width: 100%;
+  }
+
+  .top-actions .back-action {
+    margin-right: auto;
+    order: -1;
+  }
+
+  .app-shell.rtl .top-actions {
+    direction: rtl;
+  }
+
+  .app-shell.rtl .top-actions .back-action {
+    margin-left: auto;
+    margin-right: 0;
+    order: -1;
   }
 
   .top-actions button {
@@ -2108,9 +2157,9 @@ textarea:disabled {
   .patient-results,
   .visit-session-list,
   .add-patient-form {
-    overscroll-behavior-x: none;
-    overscroll-behavior-y: contain;
-    touch-action: pan-y;
+    overscroll-behavior-x: auto;
+    overscroll-behavior-y: auto;
+    touch-action: auto;
     -webkit-overflow-scrolling: touch;
   }
 }
@@ -2243,10 +2292,13 @@ textarea:disabled {
   }
 
   .topbar {
+    align-items: stretch;
     background: transparent !important;
     backdrop-filter: none;
     border-bottom: 0;
-    display: flex;
+    display: grid !important;
+    gap: 12px;
+    grid-template-columns: 1fr;
     margin-left: 0 !important;
     margin-right: 0 !important;
     padding-top: calc(28px + env(safe-area-inset-top, 0px)) !important;
@@ -2255,6 +2307,55 @@ textarea:disabled {
     top: auto !important;
     transform: none !important;
     z-index: auto;
+  }
+
+  .topbar-title {
+    min-width: 0;
+  }
+
+  .top-actions {
+    display: flex !important;
+    flex-wrap: nowrap;
+    gap: 8px;
+    justify-content: flex-end !important;
+    overflow: hidden;
+    width: 100% !important;
+  }
+
+  .mobile-shell-controls {
+    display: flex;
+    flex: 0 0 auto;
+  }
+
+  .top-actions .back-action {
+    margin-right: auto !important;
+    order: -1 !important;
+  }
+
+  .app-shell.rtl .top-actions {
+    direction: rtl;
+  }
+
+  .app-shell.rtl .top-actions .back-action {
+    margin-left: auto !important;
+    margin-right: 0 !important;
+  }
+
+  .top-actions .compact-primary {
+    margin-left: auto;
+  }
+
+  .top-actions .back-action ~ .compact-primary {
+    margin-left: 0;
+  }
+
+  .app-shell.rtl .top-actions .compact-primary {
+    margin-left: 0;
+    margin-right: auto;
+  }
+
+  .app-shell.rtl .top-actions .back-action ~ .compact-primary {
+    margin-right: 0;
   }
 
   .app-shell.rtl .topbar {
@@ -2280,7 +2381,7 @@ textarea:disabled {
   .topbar + .workspace,
   .topbar + .landing-workspace,
   .topbar + .patient-workspace {
-    margin-top: 22px !important;
+    margin-top: 0 !important;
   }
 
   .landing-workspace > .lookup-panel:first-child,
@@ -2308,5 +2409,49 @@ textarea:disabled {
   .app-shell.rtl .patient-workspace {
     margin-left: 0 !important;
     margin-right: 72px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  html,
+  body,
+  #root,
+  .app-shell {
+    height: auto !important;
+    min-height: 100dvh !important;
+    overflow-y: auto !important;
+    touch-action: auto !important;
+  }
+
+  body::before {
+    display: none !important;
+  }
+
+  .workspace,
+  .landing-workspace,
+  .patient-workspace,
+  .entry-panel,
+  .results,
+  .patient-results,
+  .visit-session-list,
+  .add-patient-form {
+    max-height: none !important;
+    overflow: visible !important;
+    overscroll-behavior-y: auto !important;
+    touch-action: auto !important;
+  }
+
+  .top-actions {
+    justify-content: flex-end !important;
+  }
+
+  .top-actions .back-action {
+    margin-right: auto !important;
+    order: -1 !important;
+  }
+
+  .app-shell.rtl .top-actions .back-action {
+    margin-left: auto !important;
+    margin-right: 0 !important;
   }
 }
