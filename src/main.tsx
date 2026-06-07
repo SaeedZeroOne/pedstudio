@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { Activity, ArrowLeft, CheckCircle2, FileDown, Globe2, HelpCircle, Moon, Plus, Printer, Save, Search, Stethoscope, Sun, Trash2, UserPlus, Users, X } from "lucide-react";
+import { Activity, ArrowLeft, CheckCircle2, ChevronDown, FileDown, Globe2, HelpCircle, Moon, Plus, Printer, Save, Search, Stethoscope, Sun, Trash2, UserPlus, Users, X } from "lucide-react";
 import { calculateAge } from "./lib/age";
 import { dateFromAge, gregorianToJalali, isoDate, jalaliToGregorian, parseIsoParts, type AgeInput } from "./lib/calendar";
 import { calculateScores, predictedHeightAt18FromZ, referenceForAge, type MetricKey, type Sex } from "./lib/growth";
@@ -470,6 +470,13 @@ function App() {
   const [jalaliDob, setJalaliDob] = useState({ year: defaultJalali.jy, month: defaultJalali.jm, day: defaultJalali.jd });
   const [draft, setDraft] = useState<Visit>(guestVisits[0]);
   const [followUpInterval, setFollowUpInterval] = useState<{ value: number | undefined; unit: FollowUpUnit }>({ value: undefined, unit: "months" });
+  const [entryCollapsed, setEntryCollapsed] = useState({
+    visitDate: true,
+    patientAge: false,
+    growth: false,
+    vitals: true,
+    session: true,
+  });
   const suppressHistoryRef = useRef(false);
   const shellRef = useRef<HTMLElement | null>(null);
   const headerRef = useRef<HTMLElement | null>(null);
@@ -625,6 +632,7 @@ function App() {
     else updatePatientRecord((record) => ({ ...record, [key]: value }));
   };
   const setDraftField = <K extends keyof Visit>(key: K, value: Visit[K]) => setDraft((prev) => ({ ...prev, [key]: value }));
+  const toggleEntrySection = (key: keyof typeof entryCollapsed) => setEntryCollapsed((prev) => ({ ...prev, [key]: !prev[key] }));
 
   function addPatient() {
     const id = patientDraft.id.trim() || generatedPatientId(patients);
@@ -997,8 +1005,7 @@ function App() {
             <h2>{labels.visitEntry}</h2>
           </div>
 
-          <div className="input-section">
-            <h3>{labels.visitDate}</h3>
+          <CollapsibleInputSection title={labels.visitDate} collapsed={entryCollapsed.visitDate} onToggle={() => toggleEntrySection("visitDate")}>
             <div className="field-grid one">
               {language === "fa" ? (
                 <JalaliDatePicker
@@ -1019,10 +1026,9 @@ function App() {
                 </label>
               )}
             </div>
-          </div>
+          </CollapsibleInputSection>
 
-          <div className="input-section">
-            <h3>{labels.patientSection}</h3>
+          <CollapsibleInputSection title={labels.patientSection} collapsed={entryCollapsed.patientAge} onToggle={() => toggleEntrySection("patientAge")}>
             <div className="field-grid two">
               <label>
                 {labels.sex}
@@ -1068,19 +1074,17 @@ function App() {
                 <NumberField label={labels.days} value={ageInput.days} step={1} set={(v) => setAgeInputField("days", v ?? 0)} />
               </div>
             )}
-          </div>
+          </CollapsibleInputSection>
 
-          <div className="input-section">
-            <h3>{labels.growthMeasurements}</h3>
+          <CollapsibleInputSection title={labels.growthMeasurements} collapsed={entryCollapsed.growth} onToggle={() => toggleEntrySection("growth")}>
             <div className="field-grid two">
               <NumberField label={labels.weightKg} value={draft.weightKg} set={(v) => setDraftField("weightKg", v)} />
               <NumberField label={labels.heightCm} value={draft.heightCm} set={(v) => setDraftField("heightCm", v)} />
               <NumberField label={labels.headCircCm} value={draft.headCircumferenceCm} disabled={!showHeadCircumference} title={!showHeadCircumference ? labels.headCircDisabled : undefined} set={(v) => setDraftField("headCircumferenceCm", v)} />
             </div>
-          </div>
+          </CollapsibleInputSection>
 
-          <div className="input-section">
-            <h3>{labels.vitalSigns}</h3>
+          <CollapsibleInputSection title={labels.vitalSigns} collapsed={entryCollapsed.vitals} onToggle={() => toggleEntrySection("vitals")}>
             <div className="field-grid two">
               <label>{labels.bpReference}<select value={bpMethod} onChange={(e) => setBpMethod(e.target.value as BpMethod)}><option value="table">{labels.aapScreeningTable}</option><option value="estimate">{labels.percentileEstimate}</option></select></label>
               <NumberField label={labels.heartRate} value={draft.heartRate} set={(v) => setDraftField("heartRate", v)} />
@@ -1088,10 +1092,9 @@ function App() {
               <NumberField label={labels.systolicBp} value={draft.systolicBp} set={(v) => setDraftField("systolicBp", v)} />
               <NumberField label={labels.diastolicBp} value={draft.diastolicBp} set={(v) => setDraftField("diastolicBp", v)} />
             </div>
-          </div>
+          </CollapsibleInputSection>
 
-          <div className="input-section">
-            <h3>{labels.visitSession}</h3>
+          <CollapsibleInputSection title={labels.visitSession} collapsed={entryCollapsed.session} onToggle={() => toggleEntrySection("session")}>
             <label>{labels.chiefComplaint}<input value={draft.chiefComplaint ?? ""} onChange={(e) => setDraftField("chiefComplaint", e.target.value)} /></label>
             <label>{labels.detailedComplaint}<textarea value={draft.detailedComplaint ?? ""} onChange={(e) => setDraftField("detailedComplaint", e.target.value)} /></label>
             <label>{labels.diagnosisVisit}<input value={draft.diagnosis ?? selectedRecord?.diagnosis ?? ""} onChange={(e) => setDraftField("diagnosis", e.target.value)} placeholder={labels.diagnosisPlaceholder} /></label>
@@ -1108,7 +1111,7 @@ function App() {
               </label>
               <div className="converted-date">{labels.followUpDue}: {formatDisplayDate(draft.followUpDate, language)}</div>
             </div>
-          </div>
+          </CollapsibleInputSection>
 
           <button className={`primary save-button ${saveState !== "idle" ? `is-${saveState}` : ""}`} onClick={saveVisit} disabled={saveState === "saving"}>
             {saveState === "saved" ? <CheckCircle2 size={18} /> : <Save size={18} />}
@@ -1240,6 +1243,18 @@ function NumberField({ label, value, step = 0.1, disabled = false, title, set }:
         }}
       />
     </label>
+  );
+}
+
+function CollapsibleInputSection({ title, collapsed, onToggle, children }: { title: string; collapsed: boolean; onToggle: () => void; children: React.ReactNode }) {
+  return (
+    <div className={`input-section collapsible-section ${collapsed ? "is-collapsed" : ""}`}>
+      <button className="section-toggle" type="button" onClick={onToggle} aria-expanded={!collapsed}>
+        <h3>{title}</h3>
+        <ChevronDown size={17} />
+      </button>
+      {!collapsed && <div className="section-body">{children}</div>}
+    </div>
   );
 }
 

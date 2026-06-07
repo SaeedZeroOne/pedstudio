@@ -601,6 +601,54 @@ button:disabled {
   margin-top: var(--space-3);
 }
 
+.collapsible-section {
+  gap: 0;
+}
+
+.section-toggle {
+  align-items: center;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-soft);
+  display: flex;
+  justify-content: space-between;
+  min-height: 34px;
+  padding: 0;
+  width: 100%;
+}
+
+.section-toggle:hover {
+  background: transparent;
+}
+
+.section-toggle h3 {
+  margin: 0;
+}
+
+.section-toggle svg {
+  color: var(--muted);
+  flex: 0 0 auto;
+  transition: transform 160ms ease;
+}
+
+.collapsible-section.is-collapsed {
+  padding-bottom: var(--space-3);
+}
+
+.collapsible-section.is-collapsed .section-toggle svg {
+  transform: rotate(-90deg);
+}
+
+.section-body {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.app-shell.rtl .collapsible-section.is-collapsed .section-toggle svg {
+  transform: rotate(90deg);
+}
+
 .input-section h3 {
   align-items: center;
   color: var(--text-soft);
@@ -2056,7 +2104,7 @@ textarea:disabled {
     min-height: 100dvh !important;
     overflow-x: hidden !important;
     overflow-y: auto !important;
-    overscroll-behavior-y: none !important;
+    overscroll-behavior-y: auto !important;
     touch-action: auto !important;
   }
 
@@ -2069,7 +2117,7 @@ textarea:disabled {
     height: auto !important;
     min-height: 100dvh !important;
     overflow: visible !important;
-    overscroll-behavior-y: none !important;
+    overscroll-behavior-y: auto !important;
     touch-action: auto !important;
   }
 
@@ -2186,7 +2234,7 @@ textarea:disabled {
   .visit-session-list,
   .add-patient-form {
     overscroll-behavior-x: auto;
-    overscroll-behavior-y: contain;
+    overscroll-behavior-y: auto;
     touch-action: auto;
     -webkit-overflow-scrolling: touch;
   }
@@ -2448,8 +2496,8 @@ textarea:disabled {
     height: auto !important;
     min-height: 100dvh !important;
     overflow-y: auto !important;
-    overscroll-behavior-y: contain !important;
-    touch-action: pan-y !important;
+    overscroll-behavior-y: auto !important;
+    touch-action: auto !important;
   }
 
   body::before {
@@ -2466,8 +2514,8 @@ textarea:disabled {
   .add-patient-form {
     max-height: none !important;
     overflow: visible !important;
-    overscroll-behavior-y: contain !important;
-    touch-action: pan-y !important;
+    overscroll-behavior-y: auto !important;
+    touch-action: auto !important;
   }
 
   .top-actions {
@@ -2492,8 +2540,8 @@ textarea:disabled {
     min-height: 100dvh !important;
     overflow-x: hidden !important;
     overflow-y: auto !important;
-    overscroll-behavior-y: contain !important;
-    touch-action: pan-y !important;
+    overscroll-behavior-y: auto !important;
+    touch-action: auto !important;
   }
 
   #root,
@@ -2501,8 +2549,8 @@ textarea:disabled {
     height: auto !important;
     min-height: 100dvh !important;
     overflow: visible !important;
-    overscroll-behavior-y: contain !important;
-    touch-action: pan-y !important;
+    overscroll-behavior-y: auto !important;
+    touch-action: auto !important;
   }
 
   .workspace,
@@ -2516,7 +2564,7 @@ textarea:disabled {
   .lookup-panel {
     max-height: none !important;
     overflow: visible !important;
-    overscroll-behavior-y: contain !important;
-    touch-action: pan-y !important;
+    overscroll-behavior-y: auto !important;
+    touch-action: auto !important;
   }
 }
