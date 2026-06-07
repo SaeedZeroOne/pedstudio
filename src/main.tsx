@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { Activity, ArrowLeft, CheckCircle2, FileDown, Globe2, HelpCircle, Moon, Plus, Printer, Save, Search, Stethoscope, Sun, Trash2, UserPlus, Users } from "lucide-react";
+import { Activity, ArrowLeft, CheckCircle2, FileDown, Globe2, HelpCircle, Moon, Plus, Printer, Save, Search, Stethoscope, Sun, Trash2, UserPlus, Users, X } from "lucide-react";
 import { calculateAge } from "./lib/age";
 import { dateFromAge, gregorianToJalali, isoDate, jalaliToGregorian, parseIsoParts, type AgeInput } from "./lib/calendar";
 import { calculateScores, predictedHeightAt18FromZ, referenceForAge, type MetricKey, type Sex } from "./lib/growth";
@@ -1413,14 +1413,23 @@ function InfoButton({ onClick, label = "Show formula" }: { onClick: () => void; 
 }
 
 function FormulaModal({ title, body, labels, onClose }: { title: string; body: string; labels: UiLabels; onClose: () => void }) {
+  const lines = body.split(/(?<=\.)\s+/).filter(Boolean);
   return (
     <div className="formula-modal" role="dialog" aria-modal="true" aria-label={title}>
       <div className="formula-card">
-        <div className="panel-heading">
-          <div><h2>{title}</h2><p>{labels.calculationNote}</p></div>
-          <button className="icon-button" onClick={onClose} title={labels.close} aria-label={labels.close}>x</button>
+        <div className="formula-card-header">
+          <div>
+            <span className="formula-kicker">{labels.showFormula}</span>
+            <h2>{title}</h2>
+            <p>{labels.calculationNote}</p>
+          </div>
+          <button className="icon-button formula-close" onClick={onClose} title={labels.close} aria-label={labels.close}>
+            <X size={18} />
+          </button>
         </div>
-        <p>{body}</p>
+        <div className="formula-content">
+          {lines.map((line, index) => <p key={`${title}-${index}`}>{line}</p>)}
+        </div>
       </div>
     </div>
   );

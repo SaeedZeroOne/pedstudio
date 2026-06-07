@@ -1213,14 +1213,67 @@ textarea:disabled {
 
 .formula-card {
   max-width: 560px;
+  overflow: hidden;
   width: min(560px, 100%);
 }
 
-.formula-card > p {
+.formula-card-header {
+  align-items: start;
+  background: var(--surface-muted);
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 20px;
+}
+
+.formula-card-header h2 {
+  color: var(--text);
+  font-size: 1.18rem;
+  font-weight: 700;
+  margin: 4px 0 0;
+}
+
+.formula-card-header p {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 300;
+  line-height: 1.45;
+  margin: 6px 0 0;
+}
+
+.formula-kicker {
+  color: var(--accent);
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.formula-close {
+  background: var(--field);
+  color: var(--text-soft);
+  height: 38px;
+  min-height: 38px;
+  padding: 0;
+  width: 38px;
+}
+
+.formula-close:hover {
+  background: var(--field-hover);
+  color: var(--text);
+}
+
+.formula-content {
+  display: grid;
+  gap: 10px;
+  padding: 18px 20px 20px;
+}
+
+.formula-content p {
   color: var(--text-soft);
   line-height: 1.58;
   margin: 0;
-  padding: 0 16px 18px;
 }
 
 .visit-list {
@@ -2028,7 +2081,7 @@ textarea:disabled {
     min-height: 100dvh !important;
     overflow-x: hidden !important;
     overflow-y: auto !important;
-    overscroll-behavior-y: auto !important;
+    overscroll-behavior-y: none !important;
     touch-action: auto !important;
   }
 
@@ -2041,7 +2094,7 @@ textarea:disabled {
     height: auto !important;
     min-height: 100dvh !important;
     overflow: visible !important;
-    overscroll-behavior-y: auto !important;
+    overscroll-behavior-y: none !important;
     touch-action: auto !important;
   }
 
@@ -2158,7 +2211,7 @@ textarea:disabled {
   .visit-session-list,
   .add-patient-form {
     overscroll-behavior-x: auto;
-    overscroll-behavior-y: auto;
+    overscroll-behavior-y: contain;
     touch-action: auto;
     -webkit-overflow-scrolling: touch;
   }
@@ -2437,7 +2490,7 @@ textarea:disabled {
   .add-patient-form {
     max-height: none !important;
     overflow: visible !important;
-    overscroll-behavior-y: auto !important;
+    overscroll-behavior-y: contain !important;
     touch-action: auto !important;
   }
 
