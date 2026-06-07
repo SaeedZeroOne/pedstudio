@@ -185,10 +185,6 @@ select {
 
 .app-shell {
   --fixed-header-offset: 0px;
-  --overscroll-bottom: 0px;
-  --overscroll-top: 0px;
-  --app-stretch: 1;
-  --app-stretch-shift: 0px;
   background: transparent;
   border: 0;
   border-radius: 0;
@@ -346,27 +342,6 @@ select {
 .heading-actions {
   align-items: center;
   display: flex;
-}
-
-.workspace,
-.landing-workspace,
-.patient-workspace {
-  transform-origin: top center;
-  transition: transform 220ms cubic-bezier(0.2, 0.85, 0.24, 1);
-}
-
-.app-shell.is-overscrolling-top .workspace,
-.app-shell.is-overscrolling-top .landing-workspace,
-.app-shell.is-overscrolling-top .patient-workspace {
-  transform: translateY(var(--app-stretch-shift)) scaleY(var(--app-stretch));
-  transform-origin: top center;
-}
-
-.app-shell.is-overscrolling-bottom .workspace,
-.app-shell.is-overscrolling-bottom .landing-workspace,
-.app-shell.is-overscrolling-bottom .patient-workspace {
-  transform: translateY(var(--app-stretch-shift)) scaleY(var(--app-stretch));
-  transform-origin: bottom center;
 }
 
 .top-actions,
@@ -2473,7 +2448,8 @@ textarea:disabled {
     height: auto !important;
     min-height: 100dvh !important;
     overflow-y: auto !important;
-    touch-action: auto !important;
+    overscroll-behavior-y: contain !important;
+    touch-action: pan-y !important;
   }
 
   body::before {
@@ -2491,7 +2467,7 @@ textarea:disabled {
     max-height: none !important;
     overflow: visible !important;
     overscroll-behavior-y: contain !important;
-    touch-action: auto !important;
+    touch-action: pan-y !important;
   }
 
   .top-actions {
@@ -2506,5 +2482,41 @@ textarea:disabled {
   .app-shell.rtl .top-actions .back-action {
     margin-left: auto !important;
     margin-right: 0 !important;
+  }
+}
+
+@media (max-width: 1100px) {
+  html,
+  body {
+    height: auto !important;
+    min-height: 100dvh !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior-y: contain !important;
+    touch-action: pan-y !important;
+  }
+
+  #root,
+  .app-shell {
+    height: auto !important;
+    min-height: 100dvh !important;
+    overflow: visible !important;
+    overscroll-behavior-y: contain !important;
+    touch-action: pan-y !important;
+  }
+
+  .workspace,
+  .landing-workspace,
+  .patient-workspace,
+  .entry-panel,
+  .results,
+  .patient-results,
+  .visit-session-list,
+  .add-patient-form,
+  .lookup-panel {
+    max-height: none !important;
+    overflow: visible !important;
+    overscroll-behavior-y: contain !important;
+    touch-action: pan-y !important;
   }
 }

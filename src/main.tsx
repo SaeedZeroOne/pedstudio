@@ -463,8 +463,6 @@ function App() {
   const [bpMethod, setBpMethod] = useState<BpMethod>("table");
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved">("idle");
   const hideMobileTopbar = false;
-  const [overscroll, setOverscroll] = useState({ top: 0, bottom: 0 });
-  const overscrollRef = useRef(overscroll);
   const [guestPatient, setGuestPatient] = useState<Patient>(defaultPatient);
   const [guestVisits, setGuestVisits] = useState<Visit[]>([newVisit()]);
   const [birthInputMode, setBirthInputMode] = useState<BirthInputMode>("age");
@@ -477,20 +475,12 @@ function App() {
   const headerRef = useRef<HTMLElement | null>(null);
   const labels = uiText[language];
   const d = (value: string | number | undefined) => localizeDigits(value, language);
-  const shellClass = `app-shell ${language === "fa" ? "rtl" : ""} ${theme === "dark" ? "theme-dark" : "theme-light"} ${hideMobileTopbar ? "mobile-topbar-hidden" : ""} ${overscroll.top ? "is-overscrolling-top" : ""} ${overscroll.bottom ? "is-overscrolling-bottom" : ""}`;
-  const overscrollPull = Math.max(overscroll.top, overscroll.bottom);
-  const shellStyle = {
-    "--app-stretch": `${1 + Math.min(overscrollPull, 72) / 900}`,
-    "--app-stretch-shift": `${overscroll.top ? overscroll.top * 0.18 : overscroll.bottom ? -overscroll.bottom * 0.18 : 0}px`,
-  } as React.CSSProperties;
+  const shellClass = `app-shell ${language === "fa" ? "rtl" : ""} ${theme === "dark" ? "theme-dark" : "theme-light"} ${hideMobileTopbar ? "mobile-topbar-hidden" : ""}`;
+  const shellStyle = {} as React.CSSProperties;
 
   useEffect(() => {
     localStorage.setItem(storageKey, JSON.stringify(patients));
   }, [patients]);
-
-  useEffect(() => {
-    overscrollRef.current = overscroll;
-  }, [overscroll]);
 
   useEffect(() => {
     localStorage.setItem(languageStorageKey, language);
@@ -526,56 +516,6 @@ function App() {
       window.removeEventListener("resize", applyOffset);
     };
   }, [screen, language, theme, isGuest, selectedPatientId]);
-
-  useEffect(() => {
-    let startY = 0;
-    let active = false;
-    const maxPull = 74;
-
-    const reset = () => {
-      active = false;
-      setOverscroll({ top: 0, bottom: 0 });
-    };
-
-    const scrollElement = () => document.scrollingElement ?? document.documentElement;
-
-    function handleTouchStart(event: TouchEvent) {
-      if (window.innerWidth <= 640 || window.innerWidth > 760 || event.touches.length !== 1) return;
-      active = true;
-      startY = event.touches[0].clientY;
-    }
-
-    function handleTouchMove(event: TouchEvent) {
-      if (!active || event.touches.length !== 1) return;
-      const element = scrollElement();
-      const delta = event.touches[0].clientY - startY;
-      const maxScroll = element.scrollHeight - element.clientHeight;
-      const atTop = element.scrollTop <= 0;
-      const atBottom = element.scrollTop >= maxScroll - 1;
-      const pull = Math.min(maxPull, Math.pow(Math.abs(delta), 0.78) * 1.35);
-
-      if (atTop && delta > 0) {
-        if (event.cancelable) event.preventDefault();
-        setOverscroll((prev) => Math.abs(prev.top - pull) > 1 ? { top: pull, bottom: 0 } : prev);
-      } else if (atBottom && delta < 0 && maxScroll > 0) {
-        if (event.cancelable) event.preventDefault();
-        setOverscroll((prev) => Math.abs(prev.bottom - pull) > 1 ? { top: 0, bottom: pull } : prev);
-      } else if (overscrollRef.current.top || overscrollRef.current.bottom) {
-        setOverscroll({ top: 0, bottom: 0 });
-      }
-    }
-
-    window.addEventListener("touchstart", handleTouchStart, { passive: true });
-    window.addEventListener("touchmove", handleTouchMove, { passive: false });
-    window.addEventListener("touchend", reset, { passive: true });
-    window.addEventListener("touchcancel", reset, { passive: true });
-    return () => {
-      window.removeEventListener("touchstart", handleTouchStart);
-      window.removeEventListener("touchmove", handleTouchMove);
-      window.removeEventListener("touchend", reset);
-      window.removeEventListener("touchcancel", reset);
-    };
-  }, []);
 
   useEffect(() => {
     const state = { screen, selectedPatientId, isGuest };
